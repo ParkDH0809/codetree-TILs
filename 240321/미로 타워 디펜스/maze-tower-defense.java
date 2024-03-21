@@ -1,242 +1,173 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Stack;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class Main {
+    public static int[] dy = {0,1,0,-1};
+    public static int[] dx = {1,0,-1,0};
 
-    static int n;
-    static int m;
-    static Point[][] map;
+    public static int[][] map;
+    public static int n,m;
+    public static Stack<Integer> stack;
+    public static int count;
+    public static Stack<Integer> countst;
+    public static int ans;
+
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-        // init
         StringTokenizer st = new StringTokenizer(br.readLine());
+
         n = Integer.parseInt(st.nextToken());
         m = Integer.parseInt(st.nextToken());
-        map = new Point[n][n];
-        for(int r = 0; r < n; r++) {
+        map = new int[n][n];
+
+        for(int i=0;i<n;i++){
             st = new StringTokenizer(br.readLine());
-            for(int c = 0; c < n; c++) {
-                map[r][c] = new Point(r, c, Integer.parseInt(st.nextToken()));
+            for(int j=0;j<n;j++){
+                map[i][j] = Integer.parseInt(st.nextToken());
             }
         }
 
-        //play
-        int answer = 0;
-        for(int i = 0; i < m; i++) {
+        for(int i=0;i<m;i++){
             st = new StringTokenizer(br.readLine());
-            answer += playGame(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
+            int dir = Integer.parseInt(st.nextToken());
+            int length = Integer.parseInt(st.nextToken());
+            simulate(dir,length);
         }
-
-        //print
-        System.out.print(answer);
+        System.out.println(ans);
     }
 
-    static int playGame(int d, int p) {
-        int score = attack(d, p);
-        while(true) {
-        	arrange(collect());
-            int removeScore = remove();
-            if(removeScore == 0) {
-                break;
+    private static void simulate(int dir, int length) {
+        //dir 방향으로 레이저를 쏴서 맵을 지우고, 중간에서 달팽이 탐색하며 큐에 쌓고,
+        int i = n/2;
+        int j = n/2;
+        stack = new Stack<>();
+        countst = new Stack<>();
+        count = 0;
+        for(int k=1;k<=length;k++){
+            int ni = i+dy[dir]*k;
+            int nj = j+dx[dir]*k;
+            ans += map[ni][nj];
+            map[ni][nj] = 0;
+        }
+
+        //달팽이 탐색
+        i = n/2;
+        j = n/2;
+
+        //아래로 1, 오른쪽으로 0, 위로 3, 왼쪽 2
+        Queue<Integer> q = new LinkedList<>();
+        //각 껍질마다 4회전 해야함.
+        int[] tempArr = {1,0,3,2};
+        for(int k=1;k<=n/2;k++){
+            j--;
+            for(int l=0;l<4;l++){
+                int cdir = tempArr[l];
+                while(true){
+                    if(map[i][j] != 0) {
+                        addTOStack(map[i][j]);
+                    }
+                    i += dy[cdir];
+                    j += dx[cdir];
+                    if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
+                        break;
+                    }
+                }
             }
-            score += removeScore;
+            if(map[i][j] != 0) addTOStack(map[i][j]);
         }
-        add(collect());
-        return score;
-    }
+        addTOStack(0);
 
-    static int attack(int d, int p) {
-        int[] dr = {0, 1, 0, -1};
-        int[] dc = {1, 0, -1, 0};
-
-        int[] arr = new int[4];
-        int r = n/2;
-        int c = n/2;
-        for(int i = 0; i < p; i++) {
-            r += dr[d];
-            c += dc[d];
-
-            arr[map[r][c].value]++;
-            map[r][c].value = 0;
+        Stack<Integer> temp = new Stack<>();
+        while(!stack.isEmpty()){
+            temp.add(stack.pop());
         }
-        
-        int score = 0;
-        for(int i = 0; i < 4; i++) {
-        	score += i * arr[i];
-        }
-        return score;
-    }
-    
-    static Stack<Integer> collect() {
-    	Stack<Integer> stack = new Stack<>();
-        int[] dr = {0, 1, 0, -1};
-        int[] dc = {1, 0, -1, 0};
-        int r = 0;
-        int c = 0;
-        int dir = 0;
-        boolean[][] visited = new boolean[n][n];
-        for(int i = 0; i < n*n; i++) {
-            int nr = r + dr[dir];
-            int nc = c + dc[dir];
 
-            if(nr < 0 || nr == n || nc < 0 || nc == n || visited[nr][nc]) {
-                dir = (dir + 1) % 4;
-            }
-
-            if(map[r][c].value != 0) {
-            	stack.add(map[r][c].value);
-                map[r][c].value = 0;
-            }
-
-            visited[r][c] = true;
-            r = r + dr[dir];
-            c = c + dc[dir];
-        }
-        return stack;
-    }
-
-    static void arrange(Stack<Integer> stack) {
-    	int r = n/2;
-    	int c = n/2;
-    	map[r][c].value = 100;
-    	int[] dr = {0, 1, 0, -1};
-    	int[] dc = {-1, 0, 1, 0};
-    	int dir = 0;
-    	
-    	while(!stack.isEmpty()) {
-    		int nr = r + dr[dir];
-    		int nc = c + dc[dir];
-    		
-    		if(nr == -1 || nc == -1) {
-    			break;
-    		}
-    		
-    		if(map[nr][nc].value == 0) {
-    			map[nr][nc].value = stack.pop();
-    			dir = (dir + 1) % 4;
-    		} else {
-    			dir = dir - 1;
-    			if(dir == -1) {
-    				dir = 3;
-    			}
-    			continue;
-    		}
-			r = nr;
-			c = nc;
-    	}
-    	
-    	map[n/2][n/2].value = 0;
-    }
-
-    static int remove() {
-    	int[] dr = {0, 1, 0, -1};
-        int[] dc = {1, 0, -1, 0};
-        int r = 0;
-        int c = 0;
-        int dir = 0;
-        boolean[][] visited = new boolean[n][n];
-        
-        List<Point> points = new ArrayList<>();
-        int current = map[r][c].value;
-        int count = 1;
-        int score = 0;
-        for(int i = 0; i < n*n; i++) {
-        	if(current != map[r][c].value) {
-            	if(count >= 4) {
-            		for(Point point : points) {
-            			point.value = 0;
-            		}
-            		score += count * current;
-            	}
-            	count = 1;
-            	current = map[r][c].value;
-            	points.clear();
-            	points.add(map[r][c]);
-            } else {
-            	count++;
-            	points.add(map[r][c]);
-            }
-            
-            visited[r][c] = true;
-            r = r + dr[dir];
-            c = c + dc[dir];
-            
-            int nr = r + dr[dir];
-            int nc = c + dc[dir];
-
-            if(nr < 0 || nr == n || nc < 0 || nc == n || visited[nr][nc]) {
-                dir = (dir + 1) % 4;
+        int prev = -1;
+        int count2 = -1;
+        ArrayList<Integer> templis = new ArrayList<>();
+        ArrayList<Integer> templisC = new ArrayList<>();
+        while(!temp.isEmpty()){
+            int cur = temp.pop();
+            if(prev == cur){
+                count2++;
+            }else{
+                if(prev != -1){
+                    templis.add(prev);
+                    templisC.add(count2);
+                }
+                count2 = 1;
+                prev = cur;
             }
         }
-        
-        return score;
-    }
-
-    static void add(Stack<Integer> stack) {
-    	if(stack.isEmpty()) {
-    		return;
-    	}
-    	
-    	Stack<Integer> tmp = new Stack<>();
-    	while(!stack.isEmpty()) {
-    		tmp.add(stack.pop());
-    	}
-    	
-    	Stack<Integer> addStack = new Stack<>();
-    	
-    	int current = tmp.pop();
-    	int count = 1;
-    	
-    	while(!tmp.isEmpty()) {
-    		int n = tmp.pop();
-    		if(n == current) {
-    			count++;
-    		} else {
-    			addStack.add(current);
-    			addStack.add(count);
-    			
-    			current = n;
-    			count = 1;
-    		}
-    	}
-    	addStack.add(current);
-		addStack.add(count);
-    	arrange(addStack);
-    }
-
-    static void print() {
-        for(int r = 0; r < n; r++) {
-            for(int c = 0; c < n; c++) {
-                System.out.print(map[r][c]);
-            }
-            System.out.println();
+        if(prev != -1){
+            templis.add(prev);
+            templisC.add(count2);
         }
-        System.out.println();
+
+        ArrayList<Integer> newlis = new ArrayList<>();
+        for(int l=0;l<templis.size();l++){
+            newlis.add(templisC.get(l));
+            newlis.add(templis.get(l));
+        }
+
+        i = n/2;
+        j = n/2;
+
+        map = new int[n][n];
+
+        int idx = 0;
+        for(int k=1;k<=n/2;k++){
+            if(idx == newlis.size()) break;
+            j--;
+
+            for(int l=0;l<4;l++){
+                int cdir = tempArr[l];
+                while(true){
+                    if(idx == newlis.size()) break;
+                    if(map[i][j] != 0) {
+                        map[i][j] = newlis.get(idx++);
+                    }
+                    i += dy[cdir];
+                    j += dx[cdir];
+                    if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
+                        break;
+                    }
+                }
+            }
+
+            if(idx == newlis.size()) break;
+            map[i][j] = newlis.get(idx++);
+        }
     }
-}
 
-class Point {
+    public static void addTOStack(int value){
+        if(countst.isEmpty()) count = 0;
+        else{
+            count = countst.peek();
+        }
 
-    int r;
-    int c;
-    int value;
-
-    Point(int r, int c, int value) {
-        this.r = r;
-        this.c = c;
-        this.value = value;
-    }
-
-    @Override
-    public String toString() {
-    	return value + " ";
+        if(!stack.isEmpty() && stack.peek() == value){
+            count++;
+            stack.push(value);
+            countst.push(count);
+        }else{
+            if(count >= 4){
+                int temp = stack.peek();
+                while(!stack.isEmpty() && stack.peek() == temp){
+                    stack.pop();
+                    countst.pop();
+                    ans += temp;
+                }
+                if(value!=0)
+                addTOStack(value);
+            }else{
+                if(value==0)return;
+                count = 1;
+                stack.push(value);
+                countst.push(count);
+            }
+        }
     }
 }
