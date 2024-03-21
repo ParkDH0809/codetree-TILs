@@ -3,15 +3,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
+class Point{
+    int count;
+    int value;
+    public Point(int value,int count){
+        this.value = value;
+        this.count = count;
+    }
+}
+
 public class Main {
     public static int[] dy = {0,1,0,-1};
     public static int[] dx = {1,0,-1,0};
 
     public static int[][] map;
     public static int n,m;
-    public static Stack<Integer> stack;
-    public static int count;
-    public static Stack<Integer> countst;
+    public static ArrayDeque<Point> stack;
     public static int ans;
 
     public static void main(String[] args) throws IOException {
@@ -42,210 +49,113 @@ public class Main {
         //dir 방향으로 레이저를 쏴서 맵을 지우고, 중간에서 달팽이 탐색하며 큐에 쌓고,
         int i = n/2;
         int j = n/2;
-        stack = new Stack<>();
-        countst = new Stack<>();
-        count = 0;
+        stack = new ArrayDeque<>();
         for(int k=1;k<=length;k++){
             int ni = i+dy[dir]*k;
             int nj = j+dx[dir]*k;
             ans += map[ni][nj];
-            map[ni][nj] = 0;
+            map[ni][nj] = -1;
+        }
+
+        //아래로 1, 오른쪽으로 0, 위로 3, 왼쪽 2
+        Queue<Integer> q = new LinkedList<>();
+        //각 껍질마다 4회전 해야함.
+        int[] temp2 = {1,0,3,2};
+
+        //달팽이 탐색
+        i = n/2;
+        j = n/2;
+        for(int k=1;k<=n/2;k++){
+            j--;
+            for(int t=0;t<4;t++){
+                int cdir = temp2[t];
+                while(true){
+                    if(map[i][j] == 0) break;
+                    if(map[i][j] != -1) {
+                        stack.addLast(new Point(map[i][j],1));
+                    }
+                    map[i][j] = 0;
+                    i += dy[cdir];
+                    j += dx[cdir];
+                    if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k) {
+                        break;
+                    }
+                }
+                if(map[i][j] == 0) break;
+            }
+            if(map[i][j] == 0) break;
+            if(map[i][j] != -1)stack.addLast(new Point(map[i][j],1));
+            map[i][j] = 0;
+        }            
+        
+        //합치기
+        boolean flag = true;
+        while(flag) {
+            flag = false;
+            ArrayDeque<Point> tempq = new ArrayDeque<>();
+            //우선 뭉치고
+            while(!stack.isEmpty()) {
+                Point cur = stack.pollFirst();
+                if(tempq.size() == 0) {
+                    tempq.addLast(cur);
+                }else {
+                    //같을때
+                    if(tempq.peekLast().value == cur.value) {
+                        tempq.peekLast().count += cur.count;
+                    }
+                    //다를 때
+                    else {
+                        tempq.addLast(cur);
+                    }
+                }
+            }
+            
+            //뭉친 temp에서 살아남은애들만 빼주고
+            ArrayDeque<Point> tempq2 = new ArrayDeque<>();
+            while(!tempq.isEmpty()) {
+                Point cur = tempq.pollFirst();
+                if(cur.count < 4) {
+                    tempq2.addLast(cur);
+                }else {
+                    flag = true;
+                    ans += cur.count*cur.value;
+                }
+            }
+            stack = tempq2;
+        } 
+        
+
+        Queue<Integer> pushq = new LinkedList<>();
+
+        while(!stack.isEmpty()){
+            Point cur = stack.pollFirst();
+            pushq.add(cur.count);
+            pushq.add(cur.value);
+            if(pushq.size() == n*n-1) break;
         }
 
         //달팽이 탐색
         i = n/2;
         j = n/2;
-
-        //아래로 1, 오른쪽으로 0, 위로 3, 왼쪽 2
-        Queue<Integer> q = new LinkedList<>();
-        //각 껍질마다 4회전 해야함.
         for(int k=1;k<=n/2;k++){
+            if(pushq.size() == 0) break;
             j--;
-            int cdir = 1;
-            while(true){
-                if(map[i][j] != 0) {
-                    addTOStack(map[i][j]);
-                }
-                i += dy[cdir];
-                j += dx[cdir];
-                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
-                    break;
-                }
-            }
 
-            cdir = 0;
-            while(true){
-                if(map[i][j] != 0) {
-                    addTOStack(map[i][j]);
-                }
-                i += dy[cdir];
-                j += dx[cdir];
-                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
-                    break;
-                }
-            }
-
-            cdir = 3;
-            while(true){
-                if(map[i][j] != 0) {
-                    addTOStack(map[i][j]);
-                }
-                i += dy[cdir];
-                j += dx[cdir];
-                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
-                    break;
+            for(int t=0;t<4;t++){
+                int cdir = temp2[t];
+                while(true){
+                    if(pushq.size() == 0) break;
+                    map[i][j] = pushq.poll();
+                    i += dy[cdir];
+                    j += dx[cdir];
+                    if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
+                        break;
+                    }
                 }
             }
-
-            cdir = 2;
-            while(true){
-                if(map[i][j] != 0) {
-                    addTOStack(map[i][j]);
-                }
-                i += dy[cdir];
-                j += dx[cdir];
-                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
-                    break;
-                }
-            }
-            if(map[i][j] != 0) addTOStack(map[i][j]);
+            if(pushq.size() == 0) break;
+            map[i][j] = pushq.poll();
         }
-        addTOStack(0);
-
-        Stack<Integer> temp = new Stack<>();
-        while(!stack.isEmpty()){
-            temp.add(stack.pop());
-        }
-
-        int prev = -1;
-        int count2 = -1;
-        ArrayList<Integer> templis = new ArrayList<>();
-        ArrayList<Integer> templisC = new ArrayList<>();
-        while(!temp.isEmpty()){
-            int cur = temp.pop();
-            if(prev == cur){
-                count2++;
-            }else{
-                if(prev != -1){
-                    templis.add(prev);
-                    templisC.add(count2);
-                }
-                count2 = 1;
-                prev = cur;
-            }
-        }
-        if(prev != -1){
-            templis.add(prev);
-            templisC.add(count2);
-        }
-
-        ArrayList<Integer> newlis = new ArrayList<>();
-        for(int l=0;l<templis.size();l++){
-            newlis.add(templisC.get(l));
-            newlis.add(templis.get(l));
-//            System.out.println(templis.get(l));
-//            System.out.println(templisC.get(l));
-//            System.out.println("end");
-        }
-
-        i = n/2;
-        j = n/2;
-
-        map = new int[n][n];
-
-        int idx = 0;
-        for(int k=1;k<=n/2;k++){
-            if(idx == newlis.size()) break;
-            j--;
-            int cdir = 1;
-            while(true){
-                if(idx == newlis.size()) break;
-                map[i][j] = newlis.get(idx++);
-                i += dy[cdir];
-                j += dx[cdir];
-                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
-                    break;
-                }
-            }
-
-            cdir = 0;
-            while(true){
-                if(idx == newlis.size()) break;
-                map[i][j] = newlis.get(idx++);
-                i += dy[cdir];
-                j += dx[cdir];
-                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
-                    break;
-                }
-            }
-
-            cdir = 3;
-            while(true){
-                if(idx == newlis.size()) break;
-                map[i][j] = newlis.get(idx++);
-                i += dy[cdir];
-                j += dx[cdir];
-                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
-                    break;
-                }
-            }
-
-            cdir = 2;
-            while(true){
-                if(idx == newlis.size()) break;
-                map[i][j] = newlis.get(idx++);
-                i += dy[cdir];
-                j += dx[cdir];
-                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
-                    break;
-                }
-            }
-            if(idx == newlis.size()) break;
-            map[i][j] = newlis.get(idx++);
-        }
-
-//        for(int a=0;a<n;a++){
-//            for(int b=0;b<n;b++){
-//                System.out.print(map[a][b]);
-//            }
-//            System.out.println("");
-//        }
     }
 
-    public static void addTOStack(int value){
-        if(countst.isEmpty()) count = 0;
-        else{
-            count = countst.peek();
-        }
-//        if(stack.isEmpty()){
-//            System.out.println("new stack ");
-//            System.out.println(value+" "+1);
-//        }else{
-//            System.out.println("before add, top value and count is "+stack.peek()+" "+countst.peek());
-//            System.out.println("added "+value);
-//        }
-        if(!stack.isEmpty() && stack.peek() == value){
-            count++;
-            stack.push(value);
-            countst.push(count);
-        }else{
-            if(count >= 4){
-                int temp = stack.peek();
-                while(!stack.isEmpty() && stack.peek() == temp){
-                    stack.pop();
-                    countst.pop();
-                    ans += temp;
-                }
-                if(value!=0)
-                addTOStack(value);
-            }else{
-                if(value==0)return;
-                count = 1;
-                stack.push(value);
-                countst.push(count);
-            }
-        }
-
-        //System.out.println("after add, top value and count is "+stack.peek()+" "+countst.peek());
-    }
 }
