@@ -59,20 +59,53 @@ public class Main {
         //아래로 1, 오른쪽으로 0, 위로 3, 왼쪽 2
         Queue<Integer> q = new LinkedList<>();
         //각 껍질마다 4회전 해야함.
-        int[] tempArr = {1,0,3,2};
         for(int k=1;k<=n/2;k++){
             j--;
-            for(int l=0;l<4;l++){
-                int cdir = tempArr[l];
-                while(true){
-                    if(map[i][j] != 0) {
-                        addTOStack(map[i][j]);
-                    }
-                    i += dy[cdir];
-                    j += dx[cdir];
-                    if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
-                        break;
-                    }
+            int cdir = 1;
+            while(true){
+                if(map[i][j] != 0) {
+                    addTOStack(map[i][j]);
+                }
+                i += dy[cdir];
+                j += dx[cdir];
+                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
+                    break;
+                }
+            }
+
+            cdir = 0;
+            while(true){
+                if(map[i][j] != 0) {
+                    addTOStack(map[i][j]);
+                }
+                i += dy[cdir];
+                j += dx[cdir];
+                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
+                    break;
+                }
+            }
+
+            cdir = 3;
+            while(true){
+                if(map[i][j] != 0) {
+                    addTOStack(map[i][j]);
+                }
+                i += dy[cdir];
+                j += dx[cdir];
+                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
+                    break;
+                }
+            }
+
+            cdir = 2;
+            while(true){
+                if(map[i][j] != 0) {
+                    addTOStack(map[i][j]);
+                }
+                i += dy[cdir];
+                j += dx[cdir];
+                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
+                    break;
                 }
             }
             if(map[i][j] != 0) addTOStack(map[i][j]);
@@ -110,6 +143,9 @@ public class Main {
         for(int l=0;l<templis.size();l++){
             newlis.add(templisC.get(l));
             newlis.add(templis.get(l));
+//            System.out.println(templis.get(l));
+//            System.out.println(templisC.get(l));
+//            System.out.println("end");
         }
 
         i = n/2;
@@ -121,25 +157,59 @@ public class Main {
         for(int k=1;k<=n/2;k++){
             if(idx == newlis.size()) break;
             j--;
-
-            for(int l=0;l<4;l++){
-                int cdir = tempArr[l];
-                while(true){
-                    if(idx == newlis.size()) break;
-                    if(map[i][j] != 0) {
-                        map[i][j] = newlis.get(idx++);
-                    }
-                    i += dy[cdir];
-                    j += dx[cdir];
-                    if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
-                        break;
-                    }
+            int cdir = 1;
+            while(true){
+                if(idx == newlis.size()) break;
+                map[i][j] = newlis.get(idx++);
+                i += dy[cdir];
+                j += dx[cdir];
+                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
+                    break;
                 }
             }
 
+            cdir = 0;
+            while(true){
+                if(idx == newlis.size()) break;
+                map[i][j] = newlis.get(idx++);
+                i += dy[cdir];
+                j += dx[cdir];
+                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
+                    break;
+                }
+            }
+
+            cdir = 3;
+            while(true){
+                if(idx == newlis.size()) break;
+                map[i][j] = newlis.get(idx++);
+                i += dy[cdir];
+                j += dx[cdir];
+                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
+                    break;
+                }
+            }
+
+            cdir = 2;
+            while(true){
+                if(idx == newlis.size()) break;
+                map[i][j] = newlis.get(idx++);
+                i += dy[cdir];
+                j += dx[cdir];
+                if(Math.abs(i+dy[cdir]-n/2) > k || Math.abs(j+dx[cdir]-n/2) > k){
+                    break;
+                }
+            }
             if(idx == newlis.size()) break;
             map[i][j] = newlis.get(idx++);
         }
+
+//        for(int a=0;a<n;a++){
+//            for(int b=0;b<n;b++){
+//                System.out.print(map[a][b]);
+//            }
+//            System.out.println("");
+//        }
     }
 
     public static void addTOStack(int value){
@@ -147,7 +217,13 @@ public class Main {
         else{
             count = countst.peek();
         }
-
+//        if(stack.isEmpty()){
+//            System.out.println("new stack ");
+//            System.out.println(value+" "+1);
+//        }else{
+//            System.out.println("before add, top value and count is "+stack.peek()+" "+countst.peek());
+//            System.out.println("added "+value);
+//        }
         if(!stack.isEmpty() && stack.peek() == value){
             count++;
             stack.push(value);
@@ -169,5 +245,7 @@ public class Main {
                 countst.push(count);
             }
         }
+
+        //System.out.println("after add, top value and count is "+stack.peek()+" "+countst.peek());
     }
 }
