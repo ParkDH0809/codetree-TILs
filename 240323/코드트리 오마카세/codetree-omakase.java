@@ -72,27 +72,43 @@ public class Main {
             }
 
             Customer customer = customers.get(sushi.name);
-            // System.out.println(": " + t + " " + sushiPosition);
             
+            boolean flag = false;
             int sushiPosition = 0;
+            // 손님이 먼저 온 경우
             if(customer.time <= sushi.time) {
                 sushiPosition = sushi.position + (t - sushi.time);
-            } else {
+                if(sushi.position <= customer.position && customer.position <= sushiPosition) {
+                    flag = true;
+                } 
+
+                if(sushiPosition >= L) {
+                    sushiPosition -= L;
+                    if(sushiPosition >= customer.position) {
+                        flag = true;
+                    }
+                }
+            } else { // 손님이 나중에 온 경우
                 int firstSushiPosition = (sushi.position + (customer.time - sushi.time)) % L;
                 sushiPosition = firstSushiPosition + (t - customer.time);
+                if(customer.position <= sushiPosition) {
+                    flag = true;
+                }   
             }
 
-            if(customer.position <= sushiPosition) {
+            if(flag) {
                 customer.count--;
             } else {
                 newSushies.add(sushi);
             }
+
 
             if(customer.count == 0) {
                 customers.remove(sushi.name);
             }
         }
 
+        // System.out.println(t + " " + newSushies.toString());
         sushies = newSushies;
         sb.append(customers.size())
         .append(" ")
