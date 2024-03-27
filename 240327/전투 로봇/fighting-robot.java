@@ -76,7 +76,7 @@ public class Main {
                         continue;
                     }
 
-                    if(map[nr][nc] == 0) {
+                    if(map[nr][nc] == 0 || map[nr][nc] == robot.level) {
                         queue.add(new int[]{nr, nc});
                         visited[nr][nc] = true;
                         continue;
