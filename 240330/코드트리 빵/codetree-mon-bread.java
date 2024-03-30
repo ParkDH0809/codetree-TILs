@@ -153,14 +153,7 @@ public class Main {
                 dir = i;
             }
         }
-
-        if(person.id == 28) {
-            System.out.println(person);
-            System.out.println(Arrays.toString(distance));
-            print();
-        }
-
-
+        
         if(dir != -1) {
             person.r += dr[dir];
             person.c += dc[dir];
