@@ -124,14 +124,21 @@ public class Main {
 
         // src
         current.next.prev = null;
+        current.next = null;
         belts[src].head = current.next;
         belts[src].size -= number;
 
         //dst
-        belts[dst].head.prev = current;
-        current.next = belts[dst].head;
-        belts[dst].head = firstPresent;
-        belts[dst].size += number;
+        if(belts[dst].isEmpty()) {
+            belts[dst].head = firstPresent;
+            belts[dst].tail = current;
+            belts[dst].size = number;
+        } else {
+            belts[dst].head.prev = current;
+            current.next = belts[dst].head;
+            belts[dst].head = firstPresent;
+            belts[dst].size += number;
+        }
 
         return belts[dst].size;
     }
