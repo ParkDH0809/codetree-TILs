@@ -67,7 +67,7 @@ public class Main {
     static void moveEachPerson(Person person) {
         int[] dr = {-1, 0, 0, 1};
         int[] dc = {0, -1, 1, 0};
-
+        
         for(int i = 0; i < 4; i++) {
             if(person.isStore(person.r + dr[i], person.c + dc[i])) {
                 closeStores.add(new int[]{person.storeR, person.storeC});
@@ -93,39 +93,56 @@ public class Main {
             queue.add(new int[]{r, c});
 
             boolean[][] visited = new boolean[n][n];
+            boolean flag = false;
             visited[r][c] = true;
             int count = 0;
-            out: while(!queue.isEmpty()) {
-                int[] point = queue.poll();
-                for(int dir = 0; dir < 4; dir++) {
-                    int nr = point[0] + dr[dir];
-                    int nc = point[1] + dc[dir];
+            while(!queue.isEmpty()) {
 
-                    if(!isRange(nr, nc)) {
-                        continue;
-                    }
+                int size = queue.size();
+                while(size-- > 0) {
+                    int[] point = queue.poll();
+                    for(int dir = 0; dir < 4; dir++) {
+                        int nr = point[0] + dr[dir];
+                        int nc = point[1] + dc[dir];
 
-                    if(visited[nr][nc]) {
-                        continue;
-                    }
+                        if(!isRange(nr, nc)) {
+                            continue;
+                        }
 
-                    if(map[nr][nc] == 2) {
-                        continue;
+                        if(visited[nr][nc]) {
+                            continue;
+                        }
+
+                        if(map[nr][nc] == 2) {
+                            continue;
+                        }
+                        
+                        if(person.isStore(nr, nc)) {
+                            flag = true;
+                            break;
+                        }
+
+                        if(map[nr][nc] == 0 || map[nr][nc] == 1) {
+                            queue.add(new int[]{nr, nc});
+                            visited[nr][nc] = true;
+                        }
                     }
                     
-                    if(person.isStore(nr, nc)) {
-                        break out;
+                    if(flag) {
+                        break;
                     }
+                }
 
-                    queue.add(new int[]{nr, nc});
-                    visited[nr][nc] = true;
+                if(flag) {
+                    break;
                 }
 
                 count++;
             }
 
-            
-            distance[i] = count;
+            if(flag) {
+                distance[i] = count;
+            }
         }
         
         int minCount = Integer.MAX_VALUE;
@@ -136,6 +153,13 @@ public class Main {
                 dir = i;
             }
         }
+
+        if(person.id == 28) {
+            System.out.println(person);
+            System.out.println(Arrays.toString(distance));
+            print();
+        }
+
 
         if(dir != -1) {
             person.r += dr[dir];
@@ -259,7 +283,7 @@ class Person {
 
     @Override
     public String toString() {
-        return "id: " + id + ": " + r + " " + c;
+        return "id: " + id + ", " + r + " " + c + " stor: " + storeR + " " + storeC;
     }
 
 }
